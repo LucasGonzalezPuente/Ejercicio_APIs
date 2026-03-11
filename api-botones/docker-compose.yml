@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  api-botones:
+    build: .
+    container_name: api_botones_contenedor
+    ports:
+      # MAPEAREMOS EL PUERTO: [Tu PC]:[Dentro del contenedor]
+      - "3000:80"
+    volumes:
+      # Esto permite que si cambias el código en tu PC, se actualice en el contenedor
+      - .:/app
+    environment:
+      - ENV=development
