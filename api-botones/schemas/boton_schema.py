@@ -1,1 +1,21 @@
-# Aqui se describirá el esquema de los datos utilizando BaseModel de pydantic. Este esquema se utilizará en los endpoints para parsear los datos recibidos por el usuario, tembien se usará al devolver los datos a la api.
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
+class BotonBase(BaseModel):
+    nombre: str
+    color: str
+
+class BotonResponse(BotonBase):
+    id: int
+    estado: bool
+    fecha_creacion: datetime
+
+    class Config:
+        from_attributes = True
+    
+class BotonUpdate(BaseModel):
+    nombre: Optional[str] = None
+    color: Optional[str] = None
+    estado: Optional[str] = None
+
