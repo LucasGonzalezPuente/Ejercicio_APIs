@@ -16,3 +16,23 @@ El proyecto ha sido **dockerizado** para asegurar un despliegue rápido y consis
 
 ---
 
+## 📦 Instalación y Despliegue con Docker
+
+Para levantar la aplicación en un contenedor aislado, sigue estos pasos:
+
+1. Navega hasta la carpeta del proyecto:
+   ```bash
+   cd api-botones
+2. sudo docker compose up --build
+3. La API estará disponible en tu navegador en: http://localhost:3000/docs
+
+ENDPOINTS: 
+[CRUD][https://learnsql.es/blog/que-es-el-crud/]
+
+Ejemplo de creación (POST):
+JSON
+
+{
+  "nombre": "Boton_Luz",
+  "color": "#FFCC00"
+}
