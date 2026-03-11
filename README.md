@@ -44,5 +44,6 @@ Bash
 
 sudo docker compose down
 
-![Ejemplo de ejecucion][botones.png]
+![Ejemplo de ejecucion](botones.png)
+
 
