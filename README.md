@@ -40,10 +40,10 @@ JSON
 🛑 Detener el servicio
 
 Para detener el contenedor y limpiar los recursos creados:
-Bash
 
 sudo docker compose down
 
 ![Ejemplo de ejecucion](botones.png)
+
 
 
