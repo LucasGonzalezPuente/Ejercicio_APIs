@@ -8,7 +8,7 @@ El proyecto ha sido **dockerizado** para asegurar un despliegue rápido y consis
 
 ## 🚀 Características del Proyecto
 - **Tecnologías:** Python 3.10, FastAPI, Pydantic, Docker, Docker Compose.
-- **Persistencia:** Temporal (Lista en memoria).
+- **Persistencia:** Permanente (Uso de Base de Datos MongoDB)
 - **Puerto de servicio:** `3000` (mapeado al puerto interno 80 del contenedor).
 
 ## 🛠️ Requisitos previos
@@ -48,6 +48,7 @@ Se ha empleado MongoDB para el guardado de los ficheros JSON.
 Esto significa que si creamos un botón, hacemos docker compose down y lo volvemos a levantar usando compose up, el botón seguirá guardado. 
 
 ![Ejemplo de ejecucion](botones.png)
+
 
 
 
