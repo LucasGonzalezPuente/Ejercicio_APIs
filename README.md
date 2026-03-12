@@ -43,7 +43,12 @@ Para detener el contenedor y limpiar los recursos creados:
 
 sudo docker compose down
 
+# Integración de base de datos
+Se ha empleado MongoDB para el guardado de los ficheros JSON.
+Esto significa que si creamos un botón, hacemos docker compose down y lo volvemos a levantar usando compose up, el botón seguirá guardado. 
+
 ![Ejemplo de ejecucion](botones.png)
+
 
 
 
