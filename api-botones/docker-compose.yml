@@ -1,14 +1,24 @@
-version: '3.8'
-
 services:
   api-botones:
     build: .
     container_name: api_botones_contenedor
     ports:
-      # MAPEAREMOS EL PUERTO: [Tu PC]:[Dentro del contenedor]
       - "3000:80"
     volumes:
-      # Esto permite que si cambias el código en tu PC, se actualice en el contenedor
       - .:/app
+    depends_on:
+      - mongodb
     environment:
-      - ENV=development
+      # IMPORTANTE: Aquí usamos el nombre del servicio 'mongodb' en lugar de 'localhost'
+      - MONGO_URL=mongodb://mongodb:27017/
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_botones
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

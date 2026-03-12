@@ -7,7 +7,7 @@ class BotonBase(BaseModel):
     color: str
 
 class BotonResponse(BotonBase):
-    id: int
+    id: str  
     estado: bool
     fecha_creacion: datetime
 

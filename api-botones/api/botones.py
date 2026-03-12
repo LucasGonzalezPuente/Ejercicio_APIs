@@ -1,76 +1,81 @@
-from fastapi import APIRouter, HTTPException
-from typing import List
+from fastapi import APIRouter, HTTPException, Query
+from typing import List, Optional
 from model.boton import Boton
 from schemas.boton_schema import BotonBase, BotonResponse, BotonUpdate
+from pymongo import MongoClient
+from bson import ObjectId
+import os
+from datetime import datetime
 
 router = APIRouter(prefix="/botones", tags=["Botones"])
 
-# Almacenamiento temporal
-db_botones: List[Boton] = []
-id_counter = 1
+# Conexión a MongoDB
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/")
+client = MongoClient(MONGO_URL)
+db = client["sialitech_db"]
+coleccion = db["botones"]
+
+# Documentos mongo pasados a disct para que sea compatible con Pydantic
+def m_doc(doc):
+    if not doc: return None
+    doc["id"] = str(doc["_id"]) # ObjectId de Mongo a string
+    return doc
 
 @router.post("/", response_model=BotonResponse)
 async def crear_boton(data: BotonBase):
-    """
-    Create a new button.
-    Args:
-    - data (BotonBase): name and color for the new button.
-    Returns:
-    - BotonResponse: the created button data.
-    """
-    global id_counter
-    if any(b.nombre == data.nombre for b in db_botones):
+    if coleccion.find_one({"nombre": data.nombre}):
         raise HTTPException(status_code=400, detail="El nombre ya existe")
     
-    nuevo = Boton(id=id_counter, nombre=data.nombre, color=data.color)
-    db_botones.append(nuevo)
-    id_counter += 1
-    return nuevo
+    nuevo_doc = {
+        "nombre": data.nombre,
+        "color": data.color,
+        "estado": False,
+        "fecha_creacion": datetime.now()  # <--- CAMBIA ESTO
+    }
+    resultado = coleccion.insert_one(nuevo_doc)
+    return m_doc(coleccion.find_one({"_id": resultado.inserted_id}))
 
-@router.get("/{nombre}", response_model=BotonResponse)
-async def leer_boton(nombre: str):
-    """
-    Read a button by name.
-    Args:
-    - nombre (str): name of the button to retrieve.
-    Returns:
-    - BotonResponse: the data of the button.
-    """
-    for b in db_botones:
-        if b.nombre == nombre:
-            return b
-    raise HTTPException(status_code=404, detail="Botón no encontrado")
+
+
+@router.get("/", response_model=List[BotonResponse])
+async def listar_botones():
+    """Devuelve todos los botones guardados en la DB"""
+    botones = list(coleccion.find())
+    return [m_doc(b) for b in botones]
+
+@router.get("/buscar", response_model=BotonResponse)
+async def leer_boton(id: Optional[str] = None, nombre: Optional[str] = None):
+    """Busca por ID (ObjectId de Mongo) o por nombre"""
+    filtro = {}
+    if id:
+        try:
+            filtro = {"_id": ObjectId(id)}
+        except:
+            raise HTTPException(status_code=400, detail="ID no válido")
+    elif nombre:
+        filtro = {"nombre": nombre}
+    else:
+        raise HTTPException(status_code=400, detail="Debes proporcionar id o nombre")
+
+    resultado = coleccion.find_one(filtro)
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Botón no encontrado")
+    return m_doc(resultado)
 
 @router.put("/{nombre}")
 async def editar_boton(nombre: str, update: dict):
-    """
-    Update a button.
-    Args:
-    - nombre (str): name of the button to set the value.
-    - update (dict): par key/value to set.
-    Returns:
-    - dict: {"status": "success"}.
-    """
-    for b in db_botones:
-        if b.nombre == nombre:
-            if "nombre" in update: b.nombre = update["nombre"]
-            if "color" in update: b.color = update["color"]
-            if "estado" in update: b.estado = update["estado"]
-            return {"status": "success", "data": b}
-    raise HTTPException(status_code=404, detail="Botón no encontrado")
+    resultado = coleccion.find_one_and_update(
+        {"nombre": nombre},
+        {"$set": update},
+        return_document=True
+    )
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Botón no encontrado")
+    return {"status": "success", "data": m_doc(resultado)}
 
 @router.delete("/{nombre}")
 async def borrar_boton(nombre: str):
-    """
-    Delete a button by name.
-    Args:
-    - nombre (str): name of the button to delete.
-    Returns:
-    - dict: {"status": "success"}.
-    """
-    global db_botones
-    original_size = len(db_botones)
-    db_botones = [b for b in db_botones if b.nombre != nombre]
-    if len(db_botones) < original_size:
+    resultado = coleccion.delete_one({"nombre": nombre})
+    if resultado.deleted_count > 0:
         return {"status": "success"}
     raise HTTPException(status_code=404, detail="Botón no encontrado")
